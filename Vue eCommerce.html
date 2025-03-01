@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://unpkg.com/vue@2.7.8/dist/vue.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+</head>
+
+<body>
+    <div id="app">
+        <header>
+            <h1 v-text="sitename"></h1>
+            <button v-on:click="showCheckout">
+                {{ cartItemCount }}
+                <span class="fas fa-cart-shopping"></span>
+                Checkout
+            </button>
+        </header>
+
+        <div v-if="showProduct">
+            <main>
+                <div v-for="(item, index) in product" :key="item.id" class="product">
+                    <figure>
+                        <img v-bind:src="item.image" :alt="item.subject">
+                    </figure>
+                    <h2 v-text="item.subject"></h2>
+                    <p v-text="item.location"></p>
+                    <p>Price: £{{ item.price.toFixed(2) }}</p>
+                    <p v-text="spacesMessage(item)"></p>
+
+                    <button v-on:click="addItemToCart(index)" :disabled="!canAddToCart(index)">
+                        Add to cart
+                    </button>
+                </div>
+            </main>
+        </div>
+
+        <div v-else>
+            <h1>Checkout Page</h1>
+            <p>
+                <strong>Name: </strong>
+                <input type="text" v-model.trim="order.name">
+            </p>
+            <p>
+                <strong>Surname: </strong>
+                <input type="text" v-model.trim="order.surname">
+            </p>
+            <p>
+                <strong>Phone No. </strong>
+                <input type="number" v-model.number="order.phone">
+            <p>
+                <strong>Address: </strong><input v-model.trim="order.address">
+            </p>
+            <p>
+                <strong>City: </strong><input v-model.trim="order.city">
+            </p>
+            <p>
+                <strong>County: </strong>
+                <select v-model="order.county">
+                    <option disabled value="">County</option>
+                    <option>Bedfordshire</option>
+                    <option>Essex</option>
+                    <option>Greater London</option>
+                    <option>Hertfordshire</option>
+                    <option>Kent</option>
+                    <option>Surrey</option>
+                </select>
+            </p>
+            <p>
+                <strong>Zip/Post Code:</strong>
+                <input type="number" v-model.number="order.zip">
+            </p>
+            <button v-on:click="submitCheckout">Place Order</button>
+
+            <h2>Order Information</h2>
+            <p>
+                <strong>Name: </strong>{{ order.name }}
+            </p>
+            <p>
+                <strong>Surname: </strong>{{ order.surname }}
+            </p>
+            <p>
+                <strong>Phone No. </strong>{{ order.phone }}
+            </p>
+            <p>
+                <strong>Address: </strong>{{ order.address }}
+            </p>
+            <p>
+                <strong>City: </strong>{{ order.city }}
+            </p>
+            <p>
+                <strong>County: </strong>{{ order.county }}
+            </p>
+            <p>
+                <strong>Zip/Postal Code: </strong>{{ order.zip }}
+            </p>
+        </div>
+    </div>
+
+    <script>
+        let webstore = new Vue({
+            el: "#app",
+            data: {
+                sitename: "Tutor 4 Hire",
+                product: [
+                    {
+                        id: 1001,
+                        subject: "Maths",
+                        location: "London - Hendon Central",
+                        price: 500,
+                        availableInventory: 8,
+                        image: "maths.jpg"
+                    },
+                    {
+                        id: 1002,
+                        subject: "Physics",
+                        location: "Manchester",
+                        price: 400,
+                        availableInventory: 5,
+                        image: "physics.jpg"
+                    },
+                ],
+                cart: [], // Now stores objects { id, quantity }
+                order: {
+                    name: "Mivek",
+                    surname: "Basinc",
+                    phone: "",
+                    address: "",
+                    city: "",
+                    county: "",
+                    zip: "",
+                },
+                showProduct: true,
+            },
+
+            computed: {
+                cartItemCount() {
+                    return this.cart.reduce((total, item) => total + item.quantity, 0);
+                },
+                canAddToCart() {
+                    return (index) => {
+                        const item = this.product[index];
+                        const cartItem = this.cart.find(cartItem => cartItem.id === item.id);
+                        const cartQuantity = cartItem ? cartItem.quantity : 0;
+                        return item.availableInventory > cartQuantity;
+                    };
+                },
+                spacesMessage() {
+                    return (item) => {
+                        const cartItem = this.cart.find(cartItem => cartItem.id === item.id);
+                        const cartQuantity = cartItem ? cartItem.quantity : 0;
+                        const available = item.availableInventory - cartQuantity;
+                        if (available === 0) {
+                            return "No more slots";
+                        } else if (available < 5) {
+                            return `Spaces available: Only ${available} left!`;
+                        } else {
+                            return "Buy now!";
+                        }
+                    };
+                },
+            },
+
+            methods: {
+                addItemToCart(index) {
+                    const item = this.product[index];
+                    const cartItemIndex = this.cart.findIndex(cartItem => cartItem.id === item.id);
+                    if (cartItemIndex !== -1) {
+                        this.cart[cartItemIndex].quantity += 1;
+                    } else {
+                        this.cart.push({ id: item.id, quantity: 1 });
+                    }
+                },
+                showCheckout() {
+                    this.showProduct = this.showProduct ? false : true;
+                },
+                submitCheckout() {
+                    console.log("Order Details:", this.order);
+                    alert("Order successfully placed for " + this.order.name + " " + this.order.surname);
+                    this.cart = [];
+                    this.showCheckout();
+                }
+            }
+        })
+    </script>
+</body>
+
+</html>
