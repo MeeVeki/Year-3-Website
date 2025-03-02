@@ -1,66 +1,61 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Tutor 4 Hire</title>
     <script src="https://unpkg.com/vue@2.7.8/dist/vue.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
 </head>
-
 <body>
     <div id="app">
         <header>
             <h1 v-text="sitename"></h1>
-            <button v-on:click="showCheckout">
+            <button v-on:click="toggleCheckout" :disabled="cartItemCount === 0">
                 {{ cartItemCount }}
-                <span class="fas fa-cart-shopping"></span>
+                <span class="fas fa-shopping-cart"></span>
                 Checkout
             </button>
+            <p v-if="cartItemCount === 0">Your cart is empty.</p>
         </header>
 
         <div v-if="showProduct">
             <main>
                 <div v-for="(item, index) in product" :key="item.id" class="product">
                     <figure>
-                        <img v-bind:src="item.image" :alt="item.subject">
+                        <i :class="item.image" class="fa-3x"></i>
                     </figure>
                     <h2 v-text="item.subject"></h2>
                     <p v-text="item.location"></p>
                     <p>Price: £{{ item.price.toFixed(2) }}</p>
                     <p v-text="spacesMessage(item)"></p>
-
-                    <button v-on:click="addItemToCart(index)" :disabled="!canAddToCart(index)">
-                        Add to cart
-                    </button>
+                    <button v-on:click="addItemToCart(index)" :disabled="!canAddToCart(index) || item.spaceAvailable === 0">Add to cart</button>
                 </div>
             </main>
         </div>
 
         <div v-else>
             <h1>Checkout Page</h1>
-            <p>
-                <strong>Name: </strong>
-                <input type="text" v-model.trim="order.name">
-            </p>
-            <p>
-                <strong>Surname: </strong>
-                <input type="text" v-model.trim="order.surname">
-            </p>
-            <p>
-                <strong>Phone No. </strong>
-                <input type="number" v-model.number="order.phone">
-            <p>
-                <strong>Address: </strong><input v-model.trim="order.address">
-            </p>
-            <p>
-                <strong>City: </strong><input v-model.trim="order.city">
-            </p>
+            <h2>Cart Summary</h2>
+            <ul>
+                <li v-for="cartItem in cart" :key="cartItem.id">
+                    {{ getProduct(cartItem.id).subject }} [{{ getProduct(cartItem.id).location }}] - £{{ getProduct(cartItem.id).price }} x {{ cartItem.quantity }}
+                    = £{{ (getProduct(cartItem.id).price * cartItem.quantity).toFixed(2) }}
+                    <button v-on:click="removeItem(cartItem.id)">Remove</button>
+                </li>
+            </ul>
+            <h3>Total: £{{ cartTotal.toFixed(2) }}</h3>
+
+            <h2>Order Details</h2>
+            <p><strong>Name: </strong><input type="text" v-model.trim="order.name"></p>
+            <p><strong>Surname: </strong><input type="text" v-model.trim="order.surname"></p>
+            <p><strong>Phone No.: </strong><input type="tel" v-model.trim="order.phone" pattern="[0-9]{10,15}"></p>
+            <p><strong>Address: </strong><input v-model.trim="order.address"></p>
+            <p><strong>City: </strong><input v-model.trim="order.city"></p>
             <p>
                 <strong>County: </strong>
                 <select v-model="order.county">
-                    <option disabled value="">County</option>
+                    <option disabled value="">Select County</option>
                     <option>Bedfordshire</option>
                     <option>Essex</option>
                     <option>Greater London</option>
@@ -69,73 +64,26 @@
                     <option>Surrey</option>
                 </select>
             </p>
-            <p>
-                <strong>Zip/Post Code:</strong>
-                <input type="number" v-model.number="order.zip">
-            </p>
+            <p><strong>Zip/Post Code:</strong> <input type="text" v-model.trim="order.zip" pattern="[0-9A-Za-z ]{5,10}"></p>
+            
             <button v-on:click="submitCheckout">Place Order</button>
-
-            <h2>Order Information</h2>
-            <p>
-                <strong>Name: </strong>{{ order.name }}
-            </p>
-            <p>
-                <strong>Surname: </strong>{{ order.surname }}
-            </p>
-            <p>
-                <strong>Phone No. </strong>{{ order.phone }}
-            </p>
-            <p>
-                <strong>Address: </strong>{{ order.address }}
-            </p>
-            <p>
-                <strong>City: </strong>{{ order.city }}
-            </p>
-            <p>
-                <strong>County: </strong>{{ order.county }}
-            </p>
-            <p>
-                <strong>Zip/Postal Code: </strong>{{ order.zip }}
-            </p>
         </div>
     </div>
 
     <script>
-        let webstore = new Vue({
+        new Vue({
             el: "#app",
             data: {
                 sitename: "Tutor 4 Hire",
                 product: [
-                    {
-                        id: 1001,
-                        subject: "Maths",
-                        location: "London - Hendon Central",
-                        price: 500,
-                        availableInventory: 8,
-                        image: "maths.jpg"
-                    },
-                    {
-                        id: 1002,
-                        subject: "Physics",
-                        location: "Manchester",
-                        price: 400,
-                        availableInventory: 5,
-                        image: "physics.jpg"
-                    },
+                    { id: 1001, subject: "Maths", location: "Hendon Central", price: 15, spaceAvailable: 10, image: "fas fa-calculator" },
+                    { id: 1002, subject: "Physics", location: "Sheperd's Bush", price: 25, spaceAvailable: 10, image: "fas fa-rocket" },
+                    { id: 1003, subject: "English", location: "King's Cross", price: 15, spaceAvailable: 10, image: "fas fa-font" },
                 ],
-                cart: [], // Now stores objects { id, quantity }
-                order: {
-                    name: "Mivek",
-                    surname: "Basinc",
-                    phone: "",
-                    address: "",
-                    city: "",
-                    county: "",
-                    zip: "",
-                },
+                cart: [],
+                order: { name: "", surname: "", phone: "", address: "", city: "", county: "", zip: "" },
                 showProduct: true,
             },
-
             computed: {
                 cartItemCount() {
                     return this.cart.reduce((total, item) => total + item.quantity, 0);
@@ -144,48 +92,63 @@
                     return (index) => {
                         const item = this.product[index];
                         const cartItem = this.cart.find(cartItem => cartItem.id === item.id);
-                        const cartQuantity = cartItem ? cartItem.quantity : 0;
-                        return item.availableInventory > cartQuantity;
+                        return item.spaceAvailable > (cartItem ? cartItem.quantity : 0);
                     };
+                },
+                cartTotal() {
+                    return this.cart.reduce((total, cartItem) => total + this.getProduct(cartItem.id).price * cartItem.quantity, 0);
                 },
                 spacesMessage() {
                     return (item) => {
-                        const cartItem = this.cart.find(cartItem => cartItem.id === item.id);
-                        const cartQuantity = cartItem ? cartItem.quantity : 0;
-                        const available = item.availableInventory - cartQuantity;
+                        const available = item.spaceAvailable - (this.cart.find(cartItem => cartItem.id === item.id)?.quantity || 0);
                         if (available === 0) {
                             return "No more slots";
-                        } else if (available < 5) {
-                            return `Spaces available: Only ${available} left!`;
+                        } else if (available <= 5) {
+                            return `Only ${available} spaces left!`;
                         } else {
                             return "Buy now!";
                         }
                     };
                 },
             },
-
             methods: {
                 addItemToCart(index) {
                     const item = this.product[index];
-                    const cartItemIndex = this.cart.findIndex(cartItem => cartItem.id === item.id);
-                    if (cartItemIndex !== -1) {
-                        this.cart[cartItemIndex].quantity += 1;
-                    } else {
+                    const cartItem = this.cart.find(cartItem => cartItem.id === item.id);
+                    if (!cartItem) {
                         this.cart.push({ id: item.id, quantity: 1 });
+                    } else if (cartItem.quantity < item.spaceAvailable) {
+                        cartItem.quantity += 1;
                     }
                 },
-                showCheckout() {
-                    this.showProduct = this.showProduct ? false : true;
+                getProduct(productId) {
+                    return this.product.find(item => item.id === productId);
+                },
+                toggleCheckout() {
+                    if (this.cartItemCount > 0) this.showProduct = !this.showProduct;
+                },
+                removeItem(productId) {
+                    const index = this.cart.findIndex(cartItem => cartItem.id === productId);
+                    if (index !== -1) {
+                        if (this.cart[index].quantity > 1) {
+                            this.cart[index].quantity -= 1;
+                        } else {
+                            this.cart.splice(index, 1);
+                        }
+                    }
                 },
                 submitCheckout() {
-                    console.log("Order Details:", this.order);
-                    alert("Order successfully placed for " + this.order.name + " " + this.order.surname);
+                    if (!this.order.name || !this.order.surname || !this.order.phone || !this.order.address) {
+                        alert("Please fill in all required fields.");
+                        return;
+                    }
+                    alert(`Order successfully placed for ${this.order.name} ${this.order.surname}`);
                     this.cart = [];
-                    this.showCheckout();
+                    this.order = { name: "", surname: "", phone: "", address: "", city: "", county: "", zip: "" };
+                    this.showProduct = true;
                 }
             }
-        })
+        });
     </script>
 </body>
-
 </html>
