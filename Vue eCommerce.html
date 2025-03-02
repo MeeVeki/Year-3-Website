@@ -7,6 +7,7 @@
     <script src="https://unpkg.com/vue@2.7.8/dist/vue.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
 </head>
+
 <body>
     <div id="app">
         <header>
@@ -17,11 +18,27 @@
                 Checkout
             </button>
             <p v-if="cartItemCount === 0">Your cart is empty.</p>
+
         </header>
 
         <div v-if="showProduct">
             <main>
-                <div v-for="(item, index) in product" :key="item.id" class="product">
+                <div>
+                    <label for="sort">Sort by:</label>
+                    <select v-model="sortKey">
+                        <option value="none">(None)</option>
+                        <option value="subject-asc">Subject (Ascending)</option>
+                        <option value="subject-desc">Subject (Descending)</option>
+                        <option value="location-asc">Location (Ascending)</option>
+                        <option value="location-desc">Location (Descending)</option>
+                        <option value="price-asc">Price (Ascending)</option>
+                        <option value="price-desc">Price (Descending)</option>
+                        <option value="spaceAvailable-asc">Available Spaces (Ascending)</option>
+                        <option value="spaceAvailable-desc">Available Spaces (Descending)</option>
+                    </select>
+                </div>
+    
+                <div v-for="(item, index) in sortedProducts" :key="item.id" class="product">
                     <figure>
                         <i :class="item.image" class="fa-3x"></i>
                     </figure>
@@ -49,7 +66,7 @@
             <h2>Order Details</h2>
             <p><strong>Name: </strong><input type="text" v-model.trim="order.name"></p>
             <p><strong>Surname: </strong><input type="text" v-model.trim="order.surname"></p>
-            <p><strong>Phone No.: </strong><input type="tel" v-model.trim="order.phone" pattern="[0-9]{10,15}"></p>
+            <p><strong>Phone No.: </strong><input type="tel" v-model.trim="order.phone" pattern="[0-9]{11}" required></p>
             <p><strong>Address: </strong><input v-model.trim="order.address"></p>
             <p><strong>City: </strong><input v-model.trim="order.city"></p>
             <p>
@@ -65,8 +82,10 @@
                 </select>
             </p>
             <p><strong>Zip/Post Code:</strong> <input type="text" v-model.trim="order.zip" pattern="[0-9A-Za-z ]{5,10}"></p>
-            
-            <button v-on:click="submitCheckout">Place Order</button>
+
+            <button v-on:click="submitCheckout" :disabled="!isCheckoutEnabled">
+                Place Order
+            </button>
         </div>
     </div>
 
@@ -83,8 +102,13 @@
                 cart: [],
                 order: { name: "", surname: "", phone: "", address: "", city: "", county: "", zip: "" },
                 showProduct: true,
+                sortKey: "none", // Default to none
+
             },
             computed: {
+                isCheckoutEnabled() {
+                    return this.order.name.trim() !== "" && /^[0-9]{11}$/.test(this.order.phone);
+                },
                 cartItemCount() {
                     return this.cart.reduce((total, item) => total + item.quantity, 0);
                 },
@@ -110,6 +134,18 @@
                         }
                     };
                 },
+                sortedProducts() {
+                    const [field, order] = this.sortKey.split("-"); // Split the sortKey into field and order
+                    let modifier = order === "asc" ? 1 : -1;
+
+                    return [...this.product].sort((a, b) => {
+                        if (typeof a[field] === "string") {
+                            return a[field].localeCompare(b[field]) * modifier;
+                        } else {
+                            return (a[field] - b[field]) * modifier;
+                        }
+                    });
+                }
             },
             methods: {
                 addItemToCart(index) {
