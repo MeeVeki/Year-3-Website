@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tutor 4 Hire</title>
     <script src="https://unpkg.com/vue@2.7.8/dist/vue.js"></script>
+    <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
 </head>
 
@@ -19,7 +20,6 @@
                 Checkout
             </button>
             <p v-if="cartItemCount === 0">Your cart is empty.</p>
-
         </header>
 
         <div v-if="showProduct">
@@ -53,7 +53,7 @@
             </main>
         </div>
 
-        <div v-else>
+        <div v-else class="checkout-page">
             <h1>Checkout Page</h1>
             <h2>Cart Summary</h2>
             <ul>
@@ -114,8 +114,18 @@
                 cart: [],
                 order: { name: "", surname: "", phone: "", address: "", city: "", county: "", zip: "" },
                 showProduct: true,
-                sortKey: "none", // Default to none
+                sortKey: "none",
+                showCheckout: false
 
+            },
+            created() {
+                fetch("data.json")
+                    .then(response => response.json())
+                    .then(data => {
+                        this.sitename = data.sitename;
+                        this.product = data.product;
+                    })
+                    .catch(error => console.error("Error loading data:", error));
             },
             computed: {
                 isCheckoutEnabled() {
@@ -142,12 +152,12 @@
                         } else if (available <= 5) {
                             return `Only ${available} spaces left!`;
                         } else {
-                            return "Buy now!";
+                            return "Book now!";
                         }
                     };
                 },
                 sortedProducts() {
-                    const [field, order] = this.sortKey.split("-"); // Split the sortKey into field and order
+                    const [field, order] = this.sortKey.split("-");
                     let modifier = order === "asc" ? 1 : -1;
 
                     return [...this.product].sort((a, b) => {
@@ -173,7 +183,8 @@
                     return this.product.find(item => item.id === productId);
                 },
                 toggleCheckout() {
-                    if (this.cartItemCount > 0) this.showProduct = !this.showProduct;
+                    this.showCheckout = !this.showCheckout;
+                    this.showProduct = !this.showCheckout;
                 },
                 removeItem(productId) {
                     const index = this.cart.findIndex(cartItem => cartItem.id === productId);
@@ -194,34 +205,10 @@
                     this.cart = [];
                     this.order = { name: "", surname: "", phone: "", address: "", city: "", county: "", zip: "" };
                     this.showProduct = true;
+                    this.showCheckout = false;
                 }
             }
         });
-
-        import axios from 'axios';
-
-        export default {
-            data() {
-                return {
-                    product: [
-                        { id: 1001, subject: "Maths", location: "London - Hendon Central", price: 25, spaceAvailable: 10, image: "fas fa-calculator" },
-                        // Your other products here
-                    ]
-                };
-            },
-            methods: {
-                async addProductToDb(product) {
-                    try {
-                        await axios.post('http://localhost:5000/api/products', product);
-                        alert('Product added successfully');
-                    } catch (err) {
-                        console.error('Error adding product:', err);
-                        alert('Failed to add product');
-                    }
-                }
-            }
-        };
     </script>
-</body>
 
 </html>
