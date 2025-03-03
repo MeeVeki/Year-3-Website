@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -37,7 +38,7 @@
                         <option value="spaceAvailable-desc">Available Spaces (Descending)</option>
                     </select>
                 </div>
-    
+
                 <div v-for="(item, index) in sortedProducts" :key="item.id" class="product">
                     <figure>
                         <i :class="item.image" class="fa-3x"></i>
@@ -46,7 +47,8 @@
                     <p v-text="item.location"></p>
                     <p>Price: £{{ item.price.toFixed(2) }}</p>
                     <p v-text="spacesMessage(item)"></p>
-                    <button v-on:click="addItemToCart(index)" :disabled="!canAddToCart(index) || item.spaceAvailable === 0">Add to cart</button>
+                    <button v-on:click="addItemToCart(index)"
+                        :disabled="!canAddToCart(index) || item.spaceAvailable === 0">Add to cart</button>
                 </div>
             </main>
         </div>
@@ -56,7 +58,8 @@
             <h2>Cart Summary</h2>
             <ul>
                 <li v-for="cartItem in cart" :key="cartItem.id">
-                    {{ getProduct(cartItem.id).subject }} [{{ getProduct(cartItem.id).location }}] - £{{ getProduct(cartItem.id).price }} x {{ cartItem.quantity }}
+                    {{ getProduct(cartItem.id).subject }} [{{ getProduct(cartItem.id).location }}] - £{{
+                    getProduct(cartItem.id).price }} x {{ cartItem.quantity }}
                     = £{{ (getProduct(cartItem.id).price * cartItem.quantity).toFixed(2) }}
                     <button v-on:click="removeItem(cartItem.id)">Remove</button>
                 </li>
@@ -66,7 +69,8 @@
             <h2>Order Details</h2>
             <p><strong>Name: </strong><input type="text" v-model.trim="order.name"></p>
             <p><strong>Surname: </strong><input type="text" v-model.trim="order.surname"></p>
-            <p><strong>Phone No.: </strong><input type="tel" v-model.trim="order.phone" pattern="[0-9]{11}" required></p>
+            <p><strong>Phone No.: </strong><input type="tel" v-model.trim="order.phone" pattern="[0-9]{11}" required>
+            </p>
             <p><strong>Address: </strong><input v-model.trim="order.address"></p>
             <p><strong>City: </strong><input v-model.trim="order.city"></p>
             <p>
@@ -81,7 +85,8 @@
                     <option>Surrey</option>
                 </select>
             </p>
-            <p><strong>Zip/Post Code:</strong> <input type="text" v-model.trim="order.zip" pattern="[0-9A-Za-z ]{5,10}"></p>
+            <p><strong>Zip/Post Code:</strong> <input type="text" v-model.trim="order.zip" pattern="[0-9A-Za-z ]{5,10}">
+            </p>
 
             <button v-on:click="submitCheckout" :disabled="!isCheckoutEnabled">
                 Place Order
@@ -95,9 +100,16 @@
             data: {
                 sitename: "Tutor 4 Hire",
                 product: [
-                    { id: 1001, subject: "Maths", location: "Hendon Central", price: 15, spaceAvailable: 10, image: "fas fa-calculator" },
-                    { id: 1002, subject: "Physics", location: "Sheperd's Bush", price: 25, spaceAvailable: 10, image: "fas fa-rocket" },
-                    { id: 1003, subject: "English", location: "King's Cross", price: 15, spaceAvailable: 10, image: "fas fa-font" },
+                    { id: 1001, subject: "Maths", location: "London - Hendon Central", price: 25, spaceAvailable: 10, image: "fas fa-calculator" },
+                    { id: 1002, subject: "Physics", location: "London - Sheperd's Bush", price: 45, spaceAvailable: 5, image: "fas fa-atom" },
+                    { id: 1003, subject: "English", location: "London - King's Cross", price: 30, spaceAvailable: 10, image: "fas fa-book" },
+                    { id: 1004, subject: "Maths", location: "Watford", price: 35, spaceAvailable: 10, image: "fas fa-calculator" },
+                    { id: 1005, subject: "Maths", location: "Luton", price: 30, spaceAvailable: 5, image: "fas fa-calculator" },
+                    { id: 1006, subject: "Chemistry", location: "Slough", price: 25, spaceAvailable: 5, image: "fas fa-flask" },
+                    { id: 1007, subject: "Chemistry", location: "Manchester", price: 30, spaceAvailable: 10, image: "fas fa-flask" },
+                    { id: 1008, subject: "Biology", location: "London - Croydon", price: 35, spaceAvailable: 10, image: "fas fa-dna" },
+                    { id: 1009, subject: "English", location: "Manchester", price: 25, spaceAvailable: 5, image: "fas fa-book" },
+                    { id: 1010, subject: "Biology", location: "Luton", price: 20, spaceAvailable: 5, image: "fas fa-dna" }
                 ],
                 cart: [],
                 order: { name: "", surname: "", phone: "", address: "", city: "", county: "", zip: "" },
@@ -185,6 +197,31 @@
                 }
             }
         });
+
+        import axios from 'axios';
+
+        export default {
+            data() {
+                return {
+                    product: [
+                        { id: 1001, subject: "Maths", location: "London - Hendon Central", price: 25, spaceAvailable: 10, image: "fas fa-calculator" },
+                        // Your other products here
+                    ]
+                };
+            },
+            methods: {
+                async addProductToDb(product) {
+                    try {
+                        await axios.post('http://localhost:5000/api/products', product);
+                        alert('Product added successfully');
+                    } catch (err) {
+                        console.error('Error adding product:', err);
+                        alert('Failed to add product');
+                    }
+                }
+            }
+        };
     </script>
 </body>
+
 </html>
