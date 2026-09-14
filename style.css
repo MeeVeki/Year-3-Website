@@ -23,6 +23,7 @@ header {
 header h1 {
     font-size: 2.5rem;
     margin-bottom: 0.5rem;
+    
 }
 
 header button {
@@ -126,9 +127,110 @@ select {
     background-color: #0033cc;
 }
 
-/* Checkout Page Hidden by Default */
+/* Checkout Page */
 .checkout-page {
-    display: none; /* Initially hidden */
+    max-width: 700px;
+    margin: 30px auto;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    padding: 25px 30px;
+}
+
+.checkout-page h1 {
+    color: #0044cc;
+    font-size: 2rem;
+    margin-bottom: 15px;
+    text-align: center;
+}
+
+.checkout-page h2 {
+    color: #0044cc;
+    font-size: 1.4rem;
+    margin: 20px 0 10px;
+    border-bottom: 2px solid #f4f4f9;
+    padding-bottom: 8px;
+}
+
+.checkout-page ul {
+    list-style: none;
+}
+
+.checkout-page li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #f4f4f9;
+    border-radius: 5px;
+    padding: 10px 15px;
+    margin-bottom: 10px;
+    font-size: 1rem;
+}
+
+.checkout-page li button {
+    background-color: #e74c3c;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 6px 12px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    margin-left: 15px;
+}
+
+.checkout-page li button:hover {
+    background-color: #c0392b;
+}
+
+.checkout-page h3 {
+    text-align: right;
+    color: #28a745;
+    font-size: 1.3rem;
+    margin: 10px 0 5px;
+}
+
+.checkout-page p {
+    margin: 12px 0;
+    font-size: 1rem;
+}
+
+.checkout-page input,
+.checkout-page select {
+    width: 100%;
+    max-width: 350px;
+    font-size: 1rem;
+    padding: 8px 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    margin-top: 5px;
+}
+
+.checkout-page input:focus,
+.checkout-page select:focus {
+    outline: none;
+    border-color: #0044cc;
+}
+
+.checkout-page > button {
+    display: block;
+    width: 100%;
+    background-color: #28a745;
+    color: white;
+    font-size: 1.1rem;
+    padding: 12px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 20px;
+    transition: background-color 0.3s;
+}
+
+.checkout-page > button:disabled {
+    background-color: #aaa;
+}
+
+.checkout-page > button:hover:not(:disabled) {
+    background-color: #218838;
 }
 
 footer {
