@@ -13,20 +13,11 @@
 <body>
     <div id="app">
         <header>
-            <h1 v-text="sitename"></h1>
-            <button v-on:click="toggleCheckout" :disabled="cartItemCount === 0">
-                {{ cartItemCount }}
-                <span class="fas fa-shopping-cart"></span>
-                Checkout
-            </button>
-            <p v-if="cartItemCount === 0">Your cart is empty.</p>
-        </header>
-
-        <div v-if="showProduct">
-            <main>
-                <div>
+            <div class="header-left">
+                <h1 v-text="sitename"></h1>
+                <div class="header-filter" v-if="showProduct">
                     <label for="sort">Sort by:</label>
-                    <select v-model="sortKey">
+                    <select id="sort" v-model="sortKey">
                         <option value="none">(None)</option>
                         <option value="subject-asc">Subject (Ascending)</option>
                         <option value="subject-desc">Subject (Descending)</option>
@@ -38,18 +29,51 @@
                         <option value="spaceAvailable-desc">Available Spaces (Descending)</option>
                     </select>
                 </div>
+            </div>
 
-                <div v-for="(item, index) in sortedProducts" :key="item.id" class="product">
-                    <figure>
-                        <i :class="item.image" class="fa-3x"></i>
-                    </figure>
-                    <h2 v-text="item.subject"></h2>
-                    <p v-text="item.location"></p>
-                    <p>Price: £{{ item.price.toFixed(2) }}</p>
-                    <p v-text="spacesMessage(item)"></p>
-                    <button v-on:click="addItemToCart(index)"
-                        :disabled="!canAddToCart(index) || item.spaceAvailable === 0">Add to cart</button>
-                </div>
+            <div class="header-right">
+                <p v-if="cartItemCount === 0">Your cart is empty.</p>
+                <button v-on:click="toggleCheckout" :disabled="cartItemCount === 0">
+                    {{ cartItemCount }}
+                    <span class="fas fa-shopping-cart"></span>
+                    Checkout
+                </button>
+            </div>
+        </header>
+
+        <div v-if="showProduct">
+            <main>
+                <section class="tutoring-message" aria-label="Tutoring message">
+                    <span class="tutoring-message-icon" aria-hidden="true">
+                        <i class="fas fa-lightbulb"></i>
+                    </span>
+                    <div>
+                        <h2>Helping every student reach their potential</h2>
+                        <p>Learn with confidence, build strong foundations, and keep growing one lesson at a time.</p>
+                    </div>
+                </section>
+
+                <section class="lesson-list" aria-label="Available lessons">
+                    <div v-for="item in sortedProducts" :key="item.id" class="product lesson-tile">
+                        <figure class="lesson-icon">
+                            <i :class="item.image" aria-hidden="true"></i>
+                        </figure>
+
+                        <div class="lesson-details">
+                            <h2 v-text="item.subject"></h2>
+                            <p class="lesson-location">
+                                <i class="fas fa-location-dot" aria-hidden="true"></i>
+                                <span v-text="item.location"></span>
+                            </p>
+                            <p class="price">£{{ item.price.toFixed(2) }}</p>
+                            <p class="spaces-message" v-text="spacesMessage(item)"></p>
+                            <button v-on:click="addItemToCart(item.id)"
+                                :disabled="!canAddToCart(item.id) || item.spaceAvailable === 0">
+                                Add to cart
+                            </button>
+                        </div>
+                    </div>
+                </section>
             </main>
         </div>
 
@@ -135,8 +159,8 @@
                     return this.cart.reduce((total, item) => total + item.quantity, 0);
                 },
                 canAddToCart() {
-                    return (index) => {
-                        const item = this.product[index];
+                    return (productId) => {
+                        const item = this.getProduct(productId);
                         const cartItem = this.cart.find(cartItem => cartItem.id === item.id);
                         return item.spaceAvailable > (cartItem ? cartItem.quantity : 0);
                     };
@@ -170,8 +194,8 @@
                 }
             },
             methods: {
-                addItemToCart(index) {
-                    const item = this.product[index];
+                addItemToCart(productId) {
+                    const item = this.getProduct(productId);
                     const cartItem = this.cart.find(cartItem => cartItem.id === item.id);
                     if (!cartItem) {
                         this.cart.push({ id: item.id, quantity: 1 });
@@ -201,6 +225,12 @@
                         alert("Please fill in all required fields.");
                         return;
                     }
+                    this.cart.forEach(cartItem => {
+                        const product = this.getProduct(cartItem.id);
+                        if (product) {
+                            product.spaceAvailable -= cartItem.quantity;
+                        }
+                    });
                     alert(`Order successfully placed for ${this.order.name} ${this.order.surname}`);
                     this.cart = [];
                     this.order = { name: "", surname: "", phone: "", address: "", city: "", county: "", zip: "" };
