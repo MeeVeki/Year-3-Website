@@ -11,25 +11,24 @@ app.use(cors());
 app.use(bodyParser.json());
 
 // MongoDB Connection
-mongoose.connect(process.env.MONGO_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true
-})
+mongoose.connect(process.env.MONGO_URI)
     .then(() => console.log("Connected to MongoDB Atlas"))
     .catch(err => console.log("Error connecting to MongoDB:", err));
 
 // Define the Lesson Schema & Model
+// Field names match products.json: subject, price, location, spaceAvailable, image
 const lessonSchema = new mongoose.Schema({
-    name: { type: String, required: true },
+    subject: { type: String, required: true },
     price: { type: Number, required: true },
     location: { type: String, required: true },
-    spaceAvailable: { type: Number, required: true }
+    spaceAvailable: { type: Number, required: true },
+    image: { type: String }
 });
 
 const Lesson = mongoose.model('Lesson', lessonSchema);
 
 
-// GET:
+// GET all lessons
 app.get('/lessons', async (req, res) => {
     try {
         const lessons = await Lesson.find();
@@ -39,12 +38,12 @@ app.get('/lessons', async (req, res) => {
     }
 });
 
-// POST:
+// POST a new lesson
 app.post('/lessons', async (req, res) => {
     try {
-        const { name, price, location, spaceAvailable } = req.body;
-        if (!name || !price || !location || !spaceAvailable) {
-            return res.status(400).json({ message: "All fields are required" });
+        const { subject, price, location, spaceAvailable } = req.body;
+        if (!subject || !price || !location || spaceAvailable === undefined) {
+            return res.status(400).json({ message: "subject, price, location, and spaceAvailable are required" });
         }
         const lesson = new Lesson(req.body);
         await lesson.save();
@@ -54,7 +53,7 @@ app.post('/lessons', async (req, res) => {
     }
 });
 
-// DELETE:
+// DELETE a lesson by id
 app.delete('/lessons/:id', async (req, res) => {
     try {
         const lesson = await Lesson.findByIdAndDelete(req.params.id);
